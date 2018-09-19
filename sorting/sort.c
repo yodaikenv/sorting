@@ -8,12 +8,12 @@
 #include "sort.h"
 
 struct sorts {  void (*f)(double *, unsigned int ); int slow; char *name;}lsorts[]={
-{selectionsort,1,"selectionsort"},
+{selectionsort,1,"basic selection sort"},
 {selsort,1,"improved selectionsort"},
-{libqsort,0,"libqsort"},
-{insertionsort,1,"insertionsort"},
+{libqsort,0,"libc qsort"},
+{insertionsort,1,"insertion sort"},
 {msort,0,"merge sort"},
-{xmsort,0,"xmerge sort"},
+{xmsort,0,"fewer copies merge sort"},
 {qs,0,"quick sort"}
 };
 #define LSORTS 6
@@ -55,7 +55,8 @@ int main(int argc, char **argv)
     if (argc == 1)
 	fprintf(stderr,
 		"sort code [repeatcount]\n where code in s (simple),p (performance) ,b (include exponential sorts) ,a (standard)\n");
-	tname = argv[0];
+	if((strncmp(argv[0],"a.out",5) == 0) || (strncmp(argv[0],"./a.out",7) == 0))tname = "";
+	else tname = argv[0];
     if (argc > 1) {
 	if (isdigit(argv[argc - 1][0])) {	//count 
 	    repeat = atoi(argv[argc - 1]);
@@ -78,7 +79,7 @@ int main(int argc, char **argv)
 	for (i = 0; i < LSORTS; i++) {
 	    if (lsorts[i].slow)
 		continue;
-	    printf("%s %s (micros) Random: ",
+	    printf("%s %s (micros) Random:\t\t",
 		   tname,lsorts[i].name);
 	    fflush(stdout);
 	    timetest(t, ASIZE, lsorts[i].f, 1);
@@ -101,7 +102,7 @@ int main(int argc, char **argv)
 	fflush(stdout);
 	break;
     case 'p':
-	for (int z = 100; z < ASIZE ; z *= 10) {
+	for (int z = 100; z <= ASIZE ; z *= 10) {
 	    printf("Sorting %d things\n", z);
 	for (i = 0; i < LSORTS; i++) {
 	    initrandomd(t, z);
@@ -155,7 +156,7 @@ timetest(double *p, const unsigned int n,
     double t;
     int error;
     if(repeat >1)newline = "\n";
-    else newline = " ";
+    else newline = "\t";
     while (repeat-- > 0) {
 	initrandomd(p, n);
 	t = timenow();

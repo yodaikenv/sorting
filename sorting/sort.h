@@ -1,4 +1,9 @@
 
+
+/* example sort functions
+all on double floats for simplicity of explication
+*/
+
 static void libqsort(double *p, unsigned int n);
 static void selectionsort(double *p, unsigned int n);
 static void insertionsort(double *p, unsigned int n);
@@ -19,7 +24,7 @@ static void libqsort(double *p, unsigned int n)
 
 typedef int (*cmpfun) (const void *, const void *);
 
-// swap utility used by mergesort and quicksort
+// swap utility  better in asm?
 static inline void pswap(double *a, double *b)
 {
     double t = *a;
@@ -52,7 +57,7 @@ static void insertionsort(double *p, unsigned int n)
     }
 }
 
-static inline double *thebest(double *p, unsigned int n)
+static inline double *findbest(double *p, unsigned int n)
 {
     unsigned int b = 0;
     for (int i = 0; i < n; i++)
@@ -64,10 +69,12 @@ static inline double *thebest(double *p, unsigned int n)
 static void selsort(double *p, unsigned int n)
 {
     for (unsigned int i = 0; i < n; i++)
-	pswap(p + i, thebest(p + i, n - i));
+	pswap(p + i, findbest(p + i, n - i));
 
 
 }
+
+// here's where heapsort goes if I get to it.
 
 //Mergesort
 static void merge(double *src, unsigned int n1, unsigned int n2,
@@ -88,7 +95,7 @@ static void merge(double *src, unsigned int n1, unsigned int n2,
 	*d++ = *s1++;
     while (s2 < src + n)
 	*d++ = *s2++;
-//now copy it back - 
+//now copy it back -  see xmerge for better approach
     for (s1 = src, d = scratch; s1 < src + n;)
 	*s1++ = *d++;
     return;
@@ -98,8 +105,6 @@ static void merge(double *src, unsigned int n1, unsigned int n2,
 // recursive mergesort with the scratch array as a parameter
 static void rmsort(double *p, unsigned int n, double *s)
 {
-    /* if (n < 2)
-       return; */
     if (n == 2) {
 	if (*p > *(p + 1)) {
 	    pswap(p, p + 1);
@@ -121,20 +126,21 @@ static void msort(double *p, unsigned int n)
 
     if (n < 2)
 	return;
-    if (n == 2) {
+    else if (n == 2) {
 	if (*p > *(p + 1)) {
 	    pswap(p, p + 1);
 	}
 	return;
-    }
+    }else{
     double *scratch = malloc(n * sizeof(double));	//won't work if parallelized
     if (!scratch) {
 	fprintf(stderr, "Merge sort cannot allocate scratch\n");
-	return;
+	return; // no way to return an error! 
     }
 
     rmsort(p, n, scratch);
     free(scratch);
+}
 }
 
 // improved mergesort
